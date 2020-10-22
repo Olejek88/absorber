@@ -3,70 +3,82 @@ const tynt = require("tynt");
 
 // check and add asset
 function checkAsset(client, req) {
-    client.connect(function (err, result) {
-        if(!err) {
-            console.log('name: '.concat(req.name));
-            models.instance.Asset.findOne({name: req.name}, function(err, asset){
-                if(err) {
-                    console.log('error: '.concat(err));
-                    return {msg: err, code: -1};
+    console.log('name: ['.concat(req.name).concat('] : ').concat(req.priceUsd).concat(' supply ').concat(req.supply));
+    const query = "SELECT * FROM asset WHERE name = ?";
+    client.execute(query, [req.name], (err, result) => {
+        if (err) {
+            console.log('error: '.concat(err));
+            return {msg: err, code: -1};
+        }
+        if (result.first() !== null) {
+            updateAsset(client, result.first().name, result.first().symbol, req, function (err, code) {
+                if (code !== 0) {
+                    console.log(tynt.Red('error').concat(' update asset failed ').concat(err));
                 }
-                if (asset !== undefined) {
-                    console.log('found '.concat(asset.name));
-                    insertData(asset.uuid, asset.priceUsd);
-                } else {
-                    console.log('asset: '.concat(asset));
-                    let ret = insertAsset(req);
-                    if (ret.code===0) {
-                        let ret = insertData(ret.data, asset.priceUsd);
-                        if (ret.code === 0) {
-                            console.log(req.name.concat(": ").concat(ret.priceUsd));
-                        }
-                    }
+            });
+            insertData(client, result.first().id, req.priceUsd, function (err, code) {
+                if (code !== 0) {
+                    console.log(tynt.Red('error').concat(' saving data: ').concat(err));
                 }
             });
         } else {
-            console.log('check_asset: error connecting to cassandra: '.concat(result));
+            insertAsset(client, req, function (err, code, uuid) {
+                if (code === 0) {
+                    console.log('asset '.concat(req.name).concat(' saved'));
+                    insertData(client, uuid, result.first().priceUsd, function (err, code) {
+                        if (code === 0) {
+                            //console.log('data '.concat(' saved'));
+                        } else {
+                            console.log(tynt.Red('error').concat(' saving data: ').concat(err));
+                        }
+                    });
+                } else {
+                    console.log(tynt.Red('error').concat(' saving asset: ').concat(err));
+                }
+            });
         }
     });
 }
 
 // add asset
-function insertAsset(req) {
+function insertAsset(client, req, callback) {
     let uuid = models.uuid();
-    let asset = new models.instance.Asset({
-        id: uuid,
-        name: req.name,
-        symbol: req.symbol,
-        supply: parseFloat(req.supply),
-        priceUsd: parseFloat(req.priceUsd),
-        changePercent24Hr: parseFloat(req.changePercent24Hr),
-        created: Date.now()
-    });
-    asset.save(function(err){
-        if(err) {
-            console.log(tynt.Red('error').concat(' saving asset: ').err);
-            return {msg: err, code: -1, data: undefined};
-        }
-        console.log('asset '.concat(req.name).concat(' saved'));
-        return {msg: "", code: 0, data: uuid};
-    });
+    let insertAsset = 'INSERT INTO asset(id, name, symbol, supply, price, change, created) VALUES(?,?,?,?,?,?,?)';
+    client.execute(insertAsset, [uuid.toString(), req.name, req.symbol, parseFloat(req.supply), parseFloat(req.priceUsd), parseFloat(req.changePercent24Hr), Date.now()], {prepare: true},
+        function (err) {
+            if (err) {
+                callback(err, -1, undefined);
+            } else {
+                callback("", 0, uuid);
+            }
+        });
+}
+
+// update asset
+function updateAsset(client, name, symbol, req, callback) {
+    let updateAsset = 'UPDATE asset SET supply=?, price=?, change=?, created=? WHERE name=? AND symbol=?';
+    client.execute(updateAsset, [parseFloat(req.supply), parseFloat(req.priceUsd), parseFloat(req.changePercent24Hr), Date.now(), name, symbol], {prepare: true},
+        function (err) {
+            if (err) {
+                callback(err, -1);
+            } else {
+                callback("", 0);
+            }
+        });
 }
 
 // add data
-function insertData(uuid, price) {
-    let asset = new models.instance.Data({
-        asset: uuid,
-        priceUsd: price,
-        created: Date.now()
-    });
-    asset.save(function(err){
-        if(err) {
-            console.log(tynt.Red('error').concat(' saving data: ').err);
-            return {msg: err, code: -1, data: undefined};
-        }
-        return {msg: "", code: 0, data: undefined};
-    });
+function insertData(client, uuid, price, callback) {
+    let id = models.uuid();
+    let insertData = 'INSERT INTO data(uuid, asset, price, created) VALUES(?,?,?,?)';
+    client.execute(insertData, [id.toString(), uuid.toString(), parseFloat(price), Date.now()], {prepare: true},
+        function (err) {
+            if (err) {
+                callback(err, -1);
+            } else {
+                callback("", 0);
+            }
+        });
 }
 
 module.exports = {checkAsset};

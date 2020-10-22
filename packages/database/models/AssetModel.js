@@ -4,8 +4,8 @@ module.exports = {
         name    : "text",
         symbol    : "text",
         supply: "float",
-        priceUsd: "float",
-        changePercent24Hr : "float",
+        price: "float",
+        change: "float",
         created : "timestamp"
     },
     key:["name","symbol"]

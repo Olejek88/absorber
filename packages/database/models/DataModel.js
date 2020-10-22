@@ -1,8 +1,9 @@
 module.exports = {
     fields:{
+        uuid: "uuid",
         asset  : "uuid",
-        priceUsd: "float",
+        price: "float",
         created : "timestamp"
     },
-    key:["asset"]
+    key: ["uuid", "asset"]
 };
