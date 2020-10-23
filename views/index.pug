@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    h1= title
+    if description.length
+        each ass in description
+            if ass
+                tr
+                    td #{ass.name}
+                    td #{ass.price}
+                    td #{ass.change}
+                    td #{ass.change}
+

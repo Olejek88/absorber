@@ -6,6 +6,7 @@ let models = require('express-cassandra');
 let logger = require('morgan');
 
 let indexRouter = require('./routes/index');
+const absorberService = require("./packages/absorber").absorberService;
 
 let app = express();
 
@@ -60,5 +61,7 @@ models.setDirectory( __dirname + '/packages/database/models').bind(
         if(err) throw err;
     }
 );
+
+absorberService();
 
 module.exports = app;

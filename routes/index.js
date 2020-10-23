@@ -1,12 +1,17 @@
 let express = require('express');
-const absorberService = require("../packages/absorber").absorberService;
+const getAssets = require("../packages/database/routes").getAssets;
 let router = express.Router();
 
 /* GET home page. */
-router.get('/packages/database', function(req, res, next) {
-  res.render('index', { title: 'Route' });
+router.get('/', function (req, res, next) {
+    getAssets(function (code, msg, ret) {
+        console.log(code);
+        if (code === 0) {
+            res.render('index', {title: 'All assets', description: ret});
+        } else {
+            res.render('index', {title: 'Error occurred', description: msg});
+        }
+    });
 });
-
-absorberService();
 
 module.exports = router;
