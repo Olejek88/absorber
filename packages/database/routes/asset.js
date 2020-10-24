@@ -25,7 +25,7 @@ function checkAsset(client, req) {
             insertAsset(client, req, function (err, code, uuid) {
                 if (code === 0) {
                     console.log('asset '.concat(req.name).concat(' saved'));
-                    insertData(client, uuid, result.first().priceUsd, function (err, code) {
+                    insertData(client, uuid, req.price, function (err, code) {
                         if (code === 0) {
                             //console.log('data '.concat(' saved'));
                         } else {

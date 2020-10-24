@@ -25,12 +25,9 @@ function absorberService() {
                         if (response !== undefined) {
                             const data = JSON.parse(response.body);
                             if (data['data'] !== undefined) {
-                                let count = 0;
+                                //let count = 0;
                                 data['data'].forEach(function (value) {
-                                    if (count < 2) {
-                                        checkAsset(client, value);
-                                    }
-                                    count++;
+                                    checkAsset(client, value);
                                 });
                             }
                         }

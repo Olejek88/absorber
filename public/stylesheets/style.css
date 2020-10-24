@@ -1,0 +1,27 @@
+body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+table {
+    font-family: Tahoma, serif;
+    font-size: 12pt;
+    border: darkslategrey;
+    padding: 5px;
+}
+
+td {
+    align-items: center;
+    text-align: center;
+    margin: 5px;
+    padding: 3px;
+}
+
+thead {
+    background-color: grey;
+    color: white;
+}

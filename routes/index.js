@@ -7,6 +7,7 @@ router.get('/', function (req, res, next) {
     getAssets(function (code, msg, ret) {
         console.log(code);
         if (code === 0) {
+            console.log(ret);
             res.render('index', {title: 'All assets', description: ret});
         } else {
             res.render('index', {title: 'Error occurred', description: msg});

@@ -2,12 +2,23 @@ extends layout
 
 block content
     h1= title
-    if description.length
-        each ass in description
-            if ass
-                tr
-                    td #{ass.name}
-                    td #{ass.price}
-                    td #{ass.change}
-                    td #{ass.change}
+    table
+        thead
+            tr
+                td name
+                td sym
+                td price
+                td supply
+                td change
+                td changed
+        if description.length
+            each ass in description
+                if ass
+                    tr
+                        td #{ass.name}
+                        td #{ass.symbol}
+                        td #{ass.price}
+                        td #{ass.supply}
+                        td #{ass.change}
+                        td #{ass.created}
 

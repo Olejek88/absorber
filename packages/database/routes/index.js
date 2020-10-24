@@ -27,20 +27,17 @@ function getAssets(callback) {
                 if (assets !== undefined) {
                     assets.forEach(function (value) {
                         ret = ret.concat(value.name).concat(" ").concat(value.symbol).concat(" ").concat(value.supply).concat(" ").concat(value.price).concat(" ").concat(value.change).concat(" ").concat(value.created).concat("<br/>");
-                        ass[counts]['name'] = value.name;
+                        ass[counts] = {
+                            'name': value.name,
+                            'symbol': value.symbol,
+                            'supply': value.supply,
+                            'price': value.price,
+                            'change': value.change,
+                            'created': value.created
+                        };
                         counts++;
-
-                        /*
-                        ass[counts]['name'] = value.name;
-                        ass[counts]['symbol'] = value.symbol;
-                        ass[counts]['supply'] = value.supply;
-                        ass[counts]['price'] = value.price;
-                        ass[counts]['change'] = value.change;
-                        ass[counts]['created'] = value.created;
-                        counts++;
-*/
                     });
-                    callback(0, "", ret);
+                    callback(0, "", ass);
                 }
             });
         } else {
