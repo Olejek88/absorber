@@ -38,6 +38,16 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+//app.set('view engine', 'jade');
+//app.use(express.bodyParser());
+//app.use(express.methodOverride());
+app.use(require('stylus').middleware({
+    src: __dirname + '/public'
+}));
+//app.use(app.router);
+//return app.use(express["static"](__dirname + '/public'));
+
+
 //Tell express-cassandra to use the models-directory, and
 //use bind() to load the models using cassandra configurations.
 models.setDirectory( __dirname + '/packages/database/models').bind(
@@ -63,5 +73,26 @@ models.setDirectory( __dirname + '/packages/database/models').bind(
 );
 
 absorberService();
+
+let connection, count, data, getAllData, getLastData, http_server, io, cassandra, sys,
+    _this = this;
+this.io = require('socket.io');
+
+count = 6;
+data = [];
+sys = require('util');
+
+if (!module.parent) {
+    http_server = app.listen(10927);
+    io = this.io.listen(http_server);
+    console.log("Express server listening on port %d", 10927);
+}
+
+io.sockets.on('connection', function (socket) {
+    _this.getAllDataWrapper(mys, 'pc1');
+    return socket.on('disconnect', function () {
+    });
+});
+
 
 module.exports = app;

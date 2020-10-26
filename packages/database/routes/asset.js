@@ -81,4 +81,39 @@ function insertData(client, uuid, price, callback) {
         });
 }
 
+// get data of asset
+function getAssetData(client, symbol) {
+    let data = [];
+    let counts = 0;
+    console.log('name: ['.concat(symbol).concat(']:'));
+    let query = "SELECT * FROM asset WHERE name = ?";
+    client.execute(query, [name], (err, result) => {
+        if (err) {
+            console.log('error: '.concat(err));
+            callback(-1, err, undefined);
+        }
+        if (result.first() !== null) {
+            let query = "SELECT * FROM data WHERE asset = ?";
+            client.execute(query, [result.first().uuid], (err, result) => {
+                if (err) {
+                    console.log('error: '.concat(err));
+                    callback(-1, err, undefined);
+                }
+                if (result.first() !== null) {
+                    result.rows.forEach(function (value) {
+                        data[counts] = {
+                            'price': value.price,
+                            'created': value.created
+                        };
+                        counts++;
+                    });
+                    callback(0, "", data);
+                }
+                callback(-2, "no data available", undefined);
+            });
+        }
+        callback(-2, "no asset available", undefined);
+    });
+}
+
 module.exports = {checkAsset};

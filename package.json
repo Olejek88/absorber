@@ -2,9 +2,22 @@
   "name": "data-absorber",
   "version": "0.1.0",
   "private": true,
+  "keywords": [
+    "cassandra",
+    "api.coincap",
+    "socket.io",
+    "realtime",
+    "counter",
+    "chart",
+    "node.js"
+  ],
   "packages": [
     "packages/*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Olejek88/absorber"
+  },
   "scripts": {
     "start": "node ./bin/www"
   },
@@ -17,6 +30,8 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "pug": "2.0.0-beta11",
+    "socket.io": ">= 0.7.2",
+    "stylus": ">= 0.13.4",
     "request": "^2.88.2",
     "tynt": "^1.2.0"
   }

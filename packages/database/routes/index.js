@@ -3,7 +3,12 @@ let cassandra = require('cassandra-driver');
 
 // connect cassandra and return client
 function connectCassandra(callback) {
-    const client = new cassandra.Client({contactPoints: ['127.0.0.1'], localDataCenter: 'datacenter1'});
+    const client = new cassandra.Client({
+        contactPoints: process.env.CASSANDRA_HOST,
+        localDataCenter: process.env.LOCAL_DATA_CENTER,
+        keyspace: process.env.KEYSPACE
+    });
+    //const client = new cassandra.Client({contactPoints: ['127.0.0.1'], localDataCenter: 'datacenter1'});
     client.connect(function (err, result) {
         if (!err) {
             console.log('check_asset: cassandra connected');
@@ -14,6 +19,7 @@ function connectCassandra(callback) {
         }
     });
 }
+
 
 // get all assets
 function getAssets(callback) {
