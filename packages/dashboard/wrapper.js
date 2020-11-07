@@ -1,6 +1,27 @@
-getAllDataWrapper = function (client, pcId) {
-    return getAllData(client, pcId, function (result) {
-        var item, _i, _len;
+import {connectCassandra} from "../database/routes";
+import {getAssetData, getLastAssetData} from "../database/routes/asset";
+
+function runDashboard() {
+    connectCassandra(function (client, err) {
+        if (client !== undefined) {
+
+        }
+    });
+}
+
+getAllData = function (connection, pcId, callback) {
+    console.log("querying for all data");
+    return connection.query('SELECT m.* from data m where m.pc=? order by dat asc', [pcId], function (err, rows, fields) {
+        if (err) {
+            throw err;
+        }
+        return callback(rows);
+    });
+};
+
+getAllDataWrapper = function (client, symbol, io) {
+    return getAssetData(client, symbol, "rows", function (result) {
+        let item, _i, _len;
         for (_i = 0, _len = result.length; _i < _len; _i++) {
             item = result[_i];
             if (typeof io !== "undefined" && io !== null) {
@@ -10,14 +31,14 @@ getAllDataWrapper = function (client, pcId) {
             }
         }
         return setInterval((function () {
-            return _this.getLastDataWrapper(connection, 'pc1');
+            return getLastDataWrapper(client, symbol, "rows");
         }), 10000);
     });
 };
 
-getLastDataWrapper = function (connection, pcId) {
-    return getLastData(connection, pcId, function (result) {
-        var item, _i, _len, _results;
+getLastDataWrapper = function (client, symbol, io) {
+    return getLastAssetData(client, symbol, function (result) {
+        let item, _i, _len, _results;
         _results = [];
         for (_i = 0, _len = result.length; _i < _len; _i++) {
             item = result[_i];
@@ -29,4 +50,4 @@ getLastDataWrapper = function (connection, pcId) {
     });
 };
 
-module.exports = {getAllDataWrapper, getLastDataWrapper};
+module.exports = {runDashboard};

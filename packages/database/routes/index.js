@@ -53,4 +53,4 @@ function getAssets(callback) {
     });
 }
 
-module.exports = {getAssets};
+module.exports = {getAssets, connectCassandra};
