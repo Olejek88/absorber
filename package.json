@@ -1,6 +1,6 @@
 {
   "name": "data-absorber",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "keywords": [
     "cassandra",
@@ -30,9 +30,9 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "pug": "2.0.0-beta11",
-    "socket.io": ">= 0.7.2",
-    "stylus": ">= 0.13.4",
     "request": "^2.88.2",
+    "socket.io": "^3.0.0",
+    "stylus": ">= 0.13.4",
     "tynt": "^1.2.0"
   }
 }
