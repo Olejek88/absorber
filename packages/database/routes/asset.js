@@ -3,7 +3,7 @@ const tynt = require("tynt");
 
 // check and add asset
 function checkAsset(client, req) {
-    console.log('name: ['.concat(req.name).concat('] : ').concat(req.priceUsd).concat(' supply ').concat(req.supply));
+    //console.log('name: ['.concat(req.name).concat('] : ').concat(req.priceUsd).concat(' supply ').concat(req.supply));
     const query = "SELECT * FROM asset WHERE name = ?";
     client.execute(query, [req.name], (err, result) => {
         if (err) {
@@ -85,7 +85,7 @@ function insertData(client, uuid, price, callback) {
 function getAssetData(client, symbol, type = "raw") {
     let data = [];
     let counts = 0;
-    console.log('name: ['.concat(symbol).concat(']:'));
+    //console.log('name: ['.concat(symbol).concat(']:'));
     let query = "SELECT * FROM asset WHERE name = ? ORDER BY created DESC";
     client.execute(query, [name], (err, result) => {
         if (err) {
@@ -124,7 +124,7 @@ function getAssetData(client, symbol, type = "raw") {
 function getLastAssetData(client, symbol, type = "raw") {
     let data = [];
     let counts = 0;
-    console.log('name: ['.concat(symbol).concat(']:'));
+    //console.log('name: ['.concat(symbol).concat(']:'));
     let query = "SELECT * FROM asset WHERE name = ?";
     client.execute(query, [name], (err, result) => {
         if (err) {

@@ -4,7 +4,7 @@ let cassandra = require('cassandra-driver');
 // connect cassandra and return client
 function connectCassandra(callback) {
     const client = new cassandra.Client({
-        contactPoints: process.env.CASSANDRA_HOST,
+        contactPoints: [process.env.CASSANDRA_HOST],
         localDataCenter: process.env.LOCAL_DATA_CENTER,
         keyspace: process.env.KEYSPACE
     });

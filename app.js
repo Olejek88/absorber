@@ -1,12 +1,15 @@
+require('dotenv').config();
 let createError = require('http-errors');
 let express = require('express');
 let path = require('path');
 let cookieParser = require('cookie-parser');
 let models = require('express-cassandra');
 let logger = require('morgan');
+let io = require('socket.io');
 
 let indexRouter = require('./routes/index');
 const absorberService = require("./packages/absorber").absorberService;
+const runDashboard = require("./packages/dashboard/wrapper").runDashboard;
 
 let app = express();
 
@@ -74,26 +77,10 @@ models.setDirectory(__dirname + '/packages/database/models').bind(
 
 absorberService();
 
-let connection, count, data, getAllData, getLastData, http_server, io, cassandra, sys,
-    _this = this;
-this.io = require('socket.io');
-
-count = 6;
-data = [];
-sys = require('util');
-
-console.log(this.io);
-if (!module.parent) {
-    http_server = app.listen(10927);
-    console.log(this.io);
-    io = this.io.listen(http_server);
-    console.log("Express server listening on port %d", 10927);
-}
-
-this.io.sockets.on('connection', function (socket) {
-    _this.getAllDataWrapper(mys, 'pc1');
-    return socket.on('disconnect', function () {
-    });
-});
+let http_server;
+http_server = app.listen(10927);
+ios = io.listen(http_server);
+console.log("express server listening on port %d", 10927);
+runDashboard(ios);
 
 module.exports = app;

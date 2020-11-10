@@ -1,11 +1,23 @@
-import {connectCassandra} from "../database/routes";
-import {getAssetData, getLastAssetData} from "../database/routes/asset";
+const connectCassandra = require("../database/routes").connectCassandra;
+const getAssetData = require("../database/routes/asset").getAssetData;
+const getLastAssetData = require("../database/routes/asset").getLastAssetData;
 
-function runDashboard() {
-    connectCassandra(function (client, err) {
-        if (client !== undefined) {
+//let sys = require('util');
 
-        }
+function runDashboard(io) {
+    console.log('[db] dashboard running');
+    io.sockets.on('connection', function (socket) {
+        connectCassandra(function (client, err) {
+            console.log('[db] cassandra connect');
+            if (client !== undefined) {
+                console.log('[db] cassandra connected');
+                getAllDataWrapper(client, "BTC", io);
+            } else {
+                console.log('[db] check_asset: error connecting to cassandra: '.concat(err));
+            }
+        });
+        return socket.on('disconnect', function () {
+        });
     });
 }
 

@@ -15,7 +15,6 @@ router.get('/assets', function (req, res, next) {
 });
 
 router.get('/', function (req, res, next) {
-
     getAssets(function (code, msg, ret) {
         console.log(code);
         if (code === 0) {
@@ -25,6 +24,10 @@ router.get('/', function (req, res, next) {
             res.render('index', {title: 'Error occurred', description: msg});
         }
     });
+});
+
+router.get('/chart', function (req, res, next) {
+    res.render('chart', {title: 'Chart', description: ''});
 });
 
 module.exports = router;
