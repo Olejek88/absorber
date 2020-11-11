@@ -15,7 +15,9 @@ html
         block content
             div#graph(style="width:100%;height:500px;")
             script(type='text/javascript').
-                var socket = io.connect();
+                //var socket = io.connect();
+                var socket = io('http://localhost:10927/');
+                console.log(socket);
                 var chart = null;
                 var actualDate = new Date();
                 function addChartData(chartData) {

@@ -11,7 +11,7 @@ function runDashboard(io) {
             console.log('[db] cassandra connect');
             if (client !== undefined) {
                 console.log('[db] cassandra connected');
-                getAllDataWrapper(client, "BTC", io);
+                getAllDataWrapper(client, "Bitcoin", io);
             } else {
                 console.log('[db] check_asset: error connecting to cassandra: '.concat(err));
             }
@@ -23,7 +23,7 @@ function runDashboard(io) {
 
 getAllData = function (connection, pcId, callback) {
     console.log("querying for all data");
-    return connection.query('SELECT m.* from data m where m.pc=? order by dat asc', [pcId], function (err, rows, fields) {
+    return connection.query('SELECT m.* from data m where m.pc=? order by created asc', [pcId], function (err, rows, fields) {
         if (err) {
             throw err;
         }
@@ -32,14 +32,16 @@ getAllData = function (connection, pcId, callback) {
 };
 
 getAllDataWrapper = function (client, symbol, io) {
-    return getAssetData(client, symbol, "rows", function (result) {
+    return getAssetData(client, symbol, "rows", function (code, err, data) {
         let item, _i, _len;
-        for (_i = 0, _len = result.length; _i < _len; _i++) {
-            item = result[_i];
-            if (typeof io !== "undefined" && io !== null) {
-                io.sockets.emit('chart', {
-                    chartData: item
-                });
+        if (code === 0) {
+            for (_i = 0, _len = data.length; _i < _len; _i++) {
+                item = data[_i];
+                if (typeof io !== "undefined" && io !== null) {
+                    io.sockets.emit('chart', {
+                        chartData: item
+                    });
+                }
             }
         }
         return setInterval((function () {
@@ -49,14 +51,16 @@ getAllDataWrapper = function (client, symbol, io) {
 };
 
 getLastDataWrapper = function (client, symbol, io) {
-    return getLastAssetData(client, symbol, function (result) {
+    return getLastAssetData(client, symbol, "rows", function (code, err, data) {
         let item, _i, _len, _results;
         _results = [];
-        for (_i = 0, _len = result.length; _i < _len; _i++) {
-            item = result[_i];
-            _results.push(typeof io !== "undefined" && io !== null ? io.sockets.emit('chart', {
-                chartData: item
-            }) : void 0);
+        if (code === 0) {
+            for (_i = 0, _len = data.length; _i < _len; _i++) {
+                item = data[_i];
+                _results.push(typeof io !== "undefined" && io !== null ? io.sockets.emit('chart', {
+                    chartData: item
+                }) : void 0);
+            }
         }
         return _results;
     });

@@ -82,23 +82,26 @@ function insertData(client, uuid, price, callback) {
 }
 
 // get data of asset
-function getAssetData(client, symbol, type = "raw") {
+function getAssetData(client, name, type = "raw", callback) {
     let data = [];
     let counts = 0;
     //console.log('name: ['.concat(symbol).concat(']:'));
-    let query = "SELECT * FROM asset WHERE name = ? ORDER BY created DESC";
+    let query = "SELECT * FROM asset WHERE name = ?";
     client.execute(query, [name], (err, result) => {
         if (err) {
             console.log('error: '.concat(err));
             callback(-1, err, undefined);
         }
-        if (result.first() !== null) {
-            let query = "SELECT * FROM data WHERE asset = ?";
-            client.execute(query, [result.first().uuid], (err, result) => {
+        console.log(result);
+        if (result !== undefined && result.first() !== null) {
+            console.log(result.first().id);
+            let query = "SELECT * FROM data WHERE asset = ? ALLOW FILTERING";
+            client.execute(query, [result.first().id], (err, result) => {
                 if (err) {
                     console.log('error: '.concat(err));
                     callback(-1, err, undefined);
                 }
+                console.log(result);
                 if (result.first() !== null) {
                     if (type === "raw") {
                         result.rows.forEach(function (value) {
@@ -121,19 +124,19 @@ function getAssetData(client, symbol, type = "raw") {
 }
 
 // get data of asset
-function getLastAssetData(client, symbol, type = "raw") {
+function getLastAssetData(client, name, type = "raw", callback) {
     let data = [];
     let counts = 0;
     //console.log('name: ['.concat(symbol).concat(']:'));
-    let query = "SELECT * FROM asset WHERE name = ?";
+    let query = "SELECT * FROM asset WHERE name = ? ALLOW FILTERING";
     client.execute(query, [name], (err, result) => {
         if (err) {
             console.log('error: '.concat(err));
             callback(-1, err, undefined);
         }
-        if (result.first() !== null) {
-            let query = "SELECT * FROM data WHERE asset = ? ORDER BY created DESC LIMIT 1";
-            client.execute(query, [result.first().uuid], (err, result) => {
+        if (result !== undefined && result.first() !== null) {
+            let query = "SELECT * FROM data WHERE asset = ? LIMIT 1 ALLOW FILTERING";
+            client.execute(query, [result.first().id], (err, result) => {
                 if (err) {
                     console.log('error: '.concat(err));
                     callback(-1, err, undefined);

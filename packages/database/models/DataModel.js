@@ -5,5 +5,6 @@ module.exports = {
         price: "float",
         created : "timestamp"
     },
-    key: ["uuid", "asset"]
+    key: ["uuid", "asset", "created"],
+    clustering_order: {"created": "desc"}
 };
