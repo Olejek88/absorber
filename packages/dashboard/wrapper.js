@@ -11,7 +11,7 @@ function runDashboard(io) {
             console.log('[db] cassandra connect');
             if (client !== undefined) {
                 console.log('[db] cassandra connected');
-                getAllDataWrapper(client, "Bitcoin", io);
+                getAllDataWrapper(client, io);
             } else {
                 console.log('[db] check_asset: error connecting to cassandra: '.concat(err));
             }
@@ -21,36 +21,35 @@ function runDashboard(io) {
     });
 }
 
-getAllDataWrapper = function (client, symbol, io) {
-    return getAssetData(client, symbol, "rows", function (code, err, data) {
+getAllDataWrapper = function (client, io) {
+    return getAssetData(client, "rows", function (code, err, data) {
         let item, _i, _len;
         if (code === 0) {
             for (_i = 0, _len = data.length; _i < _len; _i++) {
                 item = data[_i];
                 if (typeof io !== "undefined" && io !== null) {
                     io.sockets.emit('chart', {
-                        chartData: item,
-                        symbol: symbol
+                        chartData: item
                     });
                 }
             }
         }
         return setInterval((function () {
-            return getLastDataWrapper(client, symbol, io);
+            return getLastDataWrapper(client, io);
         }), 10000);
     });
 };
 
-getLastDataWrapper = function (client, symbol, io) {
-    return getLastAssetData(client, symbol, "rows", function (code, err, data) {
+getLastDataWrapper = function (client, io) {
+    return getLastAssetData(client, "rows", function (code, err, data) {
         let item, _i, _len, _results;
         _results = [];
         if (code === 0) {
             for (_i = 0, _len = data.length; _i < _len; _i++) {
                 item = data[_i];
+
                 _results.push(typeof io !== "undefined" && io !== null ? io.sockets.emit('chart', {
-                    chartData: item,
-                    symbol: symbol
+                    chartData: item
                 }) : void 0);
             }
         }

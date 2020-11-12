@@ -82,83 +82,96 @@ function insertData(client, uuid, price, callback) {
 }
 
 // get data of asset
-function getAssetData(client, name, type = "raw", callback) {
-    let data = [];
-    let counts = 0;
+function getAssetData(client, type = "raw", callback) {
+    let answer = [];
+    let _cur, _len, _count = 0;
+    let currency = ['Bitcoin', 'Ethereum', 'Monero', 'Litecoin'];
+    for (_cur = 0, _len = currency.length; _cur < _len; _cur++) {
+        getSingleAssetData(client, _cur, currency[_cur], function (code, err, symbol, _cur, data) {
+            if (code === 0) {
+                answer[_cur] = {
+                    'name': symbol,
+                    'id': _cur,
+                    'data': data
+                };
+            }
+            if (_count++ >= currency.length - 1) {
+                callback(0, "", answer);
+            }
+        });
+    }
+}
+
+// get data of asset
+function getLastAssetData(client, type = "raw", callback) {
+    let answer = [];
+    let _cur, _len, _count = 0;
+    let currency = ['Bitcoin', 'Ethereum', 'Monero', 'Litecoin'];
+    for (_cur = 0, _len = currency.length; _cur < _len; _cur++) {
+        getSingleLastAssetData(client, _cur, currency[_cur], function (code, err, symbol, _cur, data) {
+            if (code === 0) {
+                answer[_cur] = {
+                    'name': currency[_cur],
+                    'id': _cur,
+                    'data': data
+                };
+            }
+            if (_count++ >= currency.length - 1) {
+                callback(0, "", answer);
+            }
+        });
+    }
+    callback(0, "", answer);
+}
+
+function getSingleAssetData(client, _cur, name, callback) {
     let query = "SELECT * FROM asset WHERE name = ?";
     client.execute(query, [name], (err, result) => {
         if (err) {
             console.log('error: '.concat(err));
-            callback(-1, err, undefined);
+            callback(-1, err, name, _cur, undefined);
         }
         if (result !== undefined && result.first() !== null) {
-            let query = "SELECT * FROM data WHERE asset = ? ORDER BY created DESC LIMIT 50 ALLOW FILTERING";
+            let query = "SELECT * FROM data WHERE asset = ? ORDER BY created DESC LIMIT 40 ALLOW FILTERING";
             client.execute(query, [result.first().id], (err, result2) => {
                 if (err) {
                     console.log('error: '.concat(err));
-                    callback(-1, err, undefined);
+                    callback(-1, err, name, _cur, undefined);
                 }
                 if (result2.first() !== null) {
-                    if (type === "raw") {
-                        result2.rows.forEach(function (value) {
-                            data[counts] = {
-                                'price': value.price,
-                                'created': value.created
-                            };
-                            counts++;
-                        });
-                        callback(0, "", data);
-                    } else {
-                        let results = result2.rows.reverse();
-                        callback(0, "", results);
-                    }
+                    callback(0, "", name, _cur, result2.rows);
                 } else {
-                    callback(-2, "no data available", undefined);
+                    callback(-2, "no data available", name, _cur, undefined);
                 }
             });
         } else {
-            callback(-2, "no asset available", undefined);
+            callback(-2, "no asset available", name, _cur, undefined);
         }
     });
 }
 
-// get data of asset
-function getLastAssetData(client, name, type = "raw", callback) {
-    let data = [];
-    let counts = 0;
-    //console.log('name: ['.concat(symbol).concat(']:'));
+function getSingleLastAssetData(client, _cur, name, callback) {
     let query = "SELECT * FROM asset WHERE name = ? ALLOW FILTERING";
     client.execute(query, [name], (err, result) => {
         if (err) {
             console.log('error: '.concat(err));
-            callback(-1, err, undefined);
+            callback(-1, err, name, _cur, undefined);
         }
         if (result !== undefined && result.first() !== null) {
             let query = "SELECT * FROM data WHERE asset = ? ORDER BY created DESC LIMIT 1 ALLOW FILTERING";
             client.execute(query, [result.first().id], (err, result) => {
                 if (err) {
                     console.log('error: '.concat(err));
-                    callback(-1, err, undefined);
+                    callback(-1, err, name, _cur, undefined);
                 }
                 if (result.first() !== null) {
-                    if (type === "raw") {
-                        result.rows.forEach(function (value) {
-                            data[counts] = {
-                                'price': value.price,
-                                'created': value.created
-                            };
-                            counts++;
-                        });
-                        callback(0, "", data);
-                    } else {
-                        callback(0, "", result.rows);
-                    }
+                    callback(0, "", name, _cur, result.rows);
                 } else {
-                    callback(-2, "no data available", undefined);
+                    callback(-2, "no data available", name, _cur, undefined);
                 }
             });
         } else {
-            callback(-2, "no asset available", undefined);
+            callback(-2, "no asset available", name, _cur, undefined);
         }
     });
 }

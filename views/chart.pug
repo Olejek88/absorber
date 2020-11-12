@@ -11,48 +11,95 @@ html
         script(src="http://code.highcharts.com/modules/exporting.js")
     body
 
-        h1 BTC Chart
-
         block content
-            div#graph(style="width:100%;height:500px")
+            table
+                tr#tr1(style="width:100%;height:30%")
+                    td#td1(style="width:50%;height:30%")
+                        div#graph(style="width:100%;height:100%")
+                    td#td2(style="width:50%;height:30%")
+                        div#graph2(style="width:100%;height:100%")
+                tr
+                    td#td3(style="width:50%;height:30%")
+                        div#graph3(style="width:100%;height:100%")
+                    td#td4(style="width:50%;height:30%")
+                        div#graph4(style="width:100%;height:100%")
+
             script(type='text/javascript').
                 var socket = io('http://localhost:10927', {transports: ['polling']});
-                var chart = null;
+                var chart = [null, null, null, null];
+                var _i, _cur = undefined;
                 var actualDate = new Date();
-                function addChartData(chartData, symbol) {
-                    if (chart != null && symbol != null) {
-                        var index = serieIndex(symbol);
-                        var series;
-                        if (index >= 0) {
-                            series = chart.series[index];
-                        } else {
-                            series = addNewSerie(chartData.symbol);
-                        }
-                        // check if new entry is really newer than last entry
-                        var isFuture = true;
-                        var length = series.data.length;
-                        if (length === 1) {
-                            if (new Date(series.data[0].x).getTime() == actualDate.getTime()) {
-                                series.data[0].remove();
+
+                function addChartData(chartData) {
+                    if (chartData != null) {
+                        for (_i = 0; _i < chartData.data.length; _i++) {
+                            _cur = chartData['id'];
+                            if (chartData['name'] != null && _cur !== undefined) {
+                                var index = serieIndex(_cur, chartData['name']);
+                                var series;
+                                if (index >= 0) {
+                                    series = chart[_cur].series[index];
+                                } else {
+                                    if (chart[_cur] !== null && chart[_cur] !== undefined) {
+                                        series = addNewSerie(_cur, chartData['name']);
+                                    }
+                                }
+                                // check if new entry is really newer than last entry
+                                var isFuture = true;
+                                var length = series.data.length;
+                                if (length === 1) {
+                                    if (new Date(series.data[0].x).getTime() === actualDate.getTime()) {
+                                        series.data[0].remove();
+                                    }
+                                    length = series.data.length;
+                                }
+                                var x = new Date(chartData.data[_i].created).getTime();
+                                var y = chartData.data[_i].price;
+                                series.addPoint([x, y], true, false);
                             }
-                            length = series.data.length;
-                        }
-                        if (length > 0) {
-                            isFuture = new Date(chartData.created).getTime() > new Date(series.data[length - 1].x).getTime();
-                        }
-                        if (isFuture) {
-                            var x = new Date(chartData.created).getTime();
-                            var y = chartData.price;
-                            series.addPoint([x, y], true, false);
                         }
                     }
                 };
 
-                chart = new Highcharts.Chart({
+                function serieIndex(_i, seriesName) {
+                    if (chart[_i] !== null && chart[_i] !== undefined) {
+                        for (var i = 0; i < chart[_i].series.length; i++) {
+                            if (chart[_i].series[i].name === seriesName) {
+                                return i;
+                            }
+                        }
+                    }
+                    return -1;
+                }
+
+                function addNewSerie(_i, newName) {
+                    chart[_i].redraw();
+                    return chart[_i].addSeries({
+                        name: newName,
+                        data: (function () {
+                            var data = [];
+                            data.push({
+                                x: actualDate.getTime(),
+                                y: null
+                            });
+                            return data;
+                        })(),
+                        id: Math.floor(Math.random() * 1000)
+                    });
+
+                }
+
+                socket.on('chart', function (data) {
+                    if (!$.isArray(data.chartData)) {
+                        addChartData(data.chartData);
+                    } // TODO handle if it is an array
+                });
+
+                chart[0] = new Highcharts.Chart({
                     chart: {
                         renderTo: 'graph',
                         type: 'spline',
-                        marginRight: 10,
+                        marginRight: 0,
                         backgroundColor: '#111111',
                         borderColor: '#99AA00',
                         borderWidth: 1,
@@ -118,35 +165,218 @@ html
                     }]
                 });
 
-                function serieIndex(seriesName) {
-                    for (var i = 0; i < chart.series.length; i++) {
-                        if (chart.series[i].name == seriesName) {
-                            return i;
+                chart[1] = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'graph2',
+                        type: 'spline',
+                        marginRight: 10,
+                        backgroundColor: '#111111',
+                        borderColor: '#99AA00',
+                        borderWidth: 1,
+                        events: addChartData(null)
+                    },
+                    title: {
+                        text: 'ETH/USD price',
+                        style: {"color": "#99AA00", "fontSize": "18px"}
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        lineColor: '#99AA00',
+                        tickPixelInterval: 100
+                    },
+                    yAxis: {
+                        min: null,
+                        max: null,
+                        tickInterval: 2,
+                        lineColor: '#99AA00',
+                        title: {
+                            text: 'USD'
                         }
-                    }
-                    return -1;
-                }
-
-                function addNewSerie(newName) {
-                    chart.redraw();
-                    return chart.addSeries({
-                        name: newName,
+                    },
+                    plotOptions: {
+                        spline: {
+                            lineWidth: 1,
+                            marker: {
+                                enabled: false
+                            },
+                            states: {
+                                hover: {
+                                    lineWidth: 3
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: false,
+                        formatter: function () {
+                            return '<b>' + this.series.name + '</b><br/>' +
+                                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                Highcharts.numberFormat(this.y, 2);
+                        }
+                    },
+                    legend: {
+                        enabled: true
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'Ethereum',
+                        lineColor: '#99AA00',
                         data: (function () {
                             var data = [];
                             data.push({
-                                x: actualDate.getTime(),
+                                x: actualDate,
                                 y: null
                             });
                             return data;
-                        })(),
-                        id: Math.floor(Math.random() * 1000)
-                    });
-                }
-
-                socket.on('chart', function (data) {
-                    if (!$.isArray(data.chartData)) {
-                        addChartData(data.chartData, data.symbol);
-                    } // TODO handle if it is an array
+                        })()
+                    }]
                 });
+
+                chart[2] = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'graph3',
+                        type: 'spline',
+                        marginRight: 10,
+                        backgroundColor: '#111111',
+                        borderColor: '#99AA00',
+                        borderWidth: 1,
+                        events: addChartData(null)
+                    },
+                    title: {
+                        text: 'XMR/USD price',
+                        style: {"color": "#99AA00", "fontSize": "18px"}
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        lineColor: '#99AA00',
+                        tickPixelInterval: 100
+                    },
+                    yAxis: {
+                        min: null,
+                        max: null,
+                        tickInterval: 1,
+                        lineColor: '#99AA00',
+                        title: {
+                            text: 'USD'
+                        }
+                    },
+                    plotOptions: {
+                        spline: {
+                            lineWidth: 1,
+                            marker: {
+                                enabled: false
+                            },
+                            states: {
+                                hover: {
+                                    lineWidth: 3
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: false,
+                        formatter: function () {
+                            return '<b>' + this.series.name + '</b><br/>' +
+                                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                Highcharts.numberFormat(this.y, 2);
+                        }
+                    },
+                    legend: {
+                        enabled: true
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'Monero',
+                        lineColor: '#99AA00',
+                        data: (function () {
+                            // generate an array of random data
+                            var data = [];
+                            data.push({
+                                x: actualDate,
+                                y: null
+                            });
+                            return data;
+                        })()
+                    }]
+                });
+
+                chart[3] = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'graph4',
+                        type: 'spline',
+                        marginRight: 10,
+                        backgroundColor: '#111111',
+                        borderColor: '#99AA00',
+                        borderWidth: 1,
+                        events: addChartData(null)
+                    },
+                    title: {
+                        text: 'LTC/USD price',
+                        style: {"color": "#99AA00", "fontSize": "18px"}
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        lineColor: '#99AA00',
+                        tickPixelInterval: 100
+                    },
+                    yAxis: {
+                        min: null,
+                        max: null,
+                        tickInterval: 1,
+                        lineColor: '#99AA00',
+                        title: {
+                            text: 'USD'
+                        }
+                    },
+                    plotOptions: {
+                        spline: {
+                            lineWidth: 1,
+                            marker: {
+                                enabled: false
+                            },
+                            states: {
+                                hover: {
+                                    lineWidth: 3
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: false,
+                        formatter: function () {
+                            return '<b>' + this.series.name + '</b><br/>' +
+                                Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                                Highcharts.numberFormat(this.y, 2);
+                        }
+                    },
+                    legend: {
+                        enabled: true
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'Litecoin',
+                        lineColor: '#99AA00',
+                        data: (function () {
+                            // generate an array of random data
+                            var data = [];
+                            data.push({
+                                x: actualDate,
+                                y: null
+                            });
+                            return data;
+                        })()
+                    }]
+                });
+
+
+
+
+
 
 
