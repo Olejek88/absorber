@@ -85,26 +85,22 @@ function insertData(client, uuid, price, callback) {
 function getAssetData(client, name, type = "raw", callback) {
     let data = [];
     let counts = 0;
-    //console.log('name: ['.concat(symbol).concat(']:'));
     let query = "SELECT * FROM asset WHERE name = ?";
     client.execute(query, [name], (err, result) => {
         if (err) {
             console.log('error: '.concat(err));
             callback(-1, err, undefined);
         }
-        console.log(result);
         if (result !== undefined && result.first() !== null) {
-            console.log(result.first().id);
             let query = "SELECT * FROM data WHERE asset = ? ALLOW FILTERING";
-            client.execute(query, [result.first().id], (err, result) => {
+            client.execute(query, [result.first().id], (err, result2) => {
                 if (err) {
                     console.log('error: '.concat(err));
                     callback(-1, err, undefined);
                 }
-                console.log(result);
-                if (result.first() !== null) {
+                if (result2.first() !== null) {
                     if (type === "raw") {
-                        result.rows.forEach(function (value) {
+                        result2.rows.forEach(function (value) {
                             data[counts] = {
                                 'price': value.price,
                                 'created': value.created
@@ -113,13 +109,15 @@ function getAssetData(client, name, type = "raw", callback) {
                         });
                         callback(0, "", data);
                     } else {
-                        callback(0, "", result.rows);
+                        callback(0, "", result2.rows);
                     }
+                } else {
+                    callback(-2, "no data available", undefined);
                 }
-                callback(-2, "no data available", undefined);
             });
+        } else {
+            callback(-2, "no asset available", undefined);
         }
-        callback(-2, "no asset available", undefined);
     });
 }
 
@@ -135,7 +133,7 @@ function getLastAssetData(client, name, type = "raw", callback) {
             callback(-1, err, undefined);
         }
         if (result !== undefined && result.first() !== null) {
-            let query = "SELECT * FROM data WHERE asset = ? LIMIT 1 ALLOW FILTERING";
+            let query = "SELECT * FROM data WHERE asset = ? ORDER BY created DESC LIMIT 1 ALLOW FILTERING";
             client.execute(query, [result.first().id], (err, result) => {
                 if (err) {
                     console.log('error: '.concat(err));
@@ -154,11 +152,13 @@ function getLastAssetData(client, name, type = "raw", callback) {
                     } else {
                         callback(0, "", result.rows);
                     }
+                } else {
+                    callback(-2, "no data available", undefined);
                 }
-                callback(-2, "no data available", undefined);
             });
+        } else {
+            callback(-2, "no asset available", undefined);
         }
-        callback(-2, "no asset available", undefined);
     });
 }
 

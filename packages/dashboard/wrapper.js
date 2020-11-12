@@ -34,18 +34,21 @@ getAllData = function (connection, pcId, callback) {
 getAllDataWrapper = function (client, symbol, io) {
     return getAssetData(client, symbol, "rows", function (code, err, data) {
         let item, _i, _len;
+        console.log("code:" + code);
         if (code === 0) {
             for (_i = 0, _len = data.length; _i < _len; _i++) {
                 item = data[_i];
+                console.log("getAllData");
                 if (typeof io !== "undefined" && io !== null) {
                     io.sockets.emit('chart', {
-                        chartData: item
+                        chartData: item,
+                        symbol: symbol
                     });
                 }
             }
         }
         return setInterval((function () {
-            return getLastDataWrapper(client, symbol, "rows");
+            return getLastDataWrapper(client, symbol, io);
         }), 10000);
     });
 };
@@ -57,8 +60,10 @@ getLastDataWrapper = function (client, symbol, io) {
         if (code === 0) {
             for (_i = 0, _len = data.length; _i < _len; _i++) {
                 item = data[_i];
+                console.log(item);
                 _results.push(typeof io !== "undefined" && io !== null ? io.sockets.emit('chart', {
-                    chartData: item
+                    chartData: item,
+                    symbol: symbol
                 }) : void 0);
             }
         }

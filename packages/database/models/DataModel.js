@@ -1,10 +1,10 @@
 module.exports = {
     fields:{
         uuid: "uuid",
-        asset  : "uuid",
+        asset: "uuid",
         price: "float",
-        created : "timestamp"
+        created: "timestamp"
     },
-    key: ["uuid", "asset", "created"],
+    key: ["asset", "created"],
     clustering_order: {"created": "desc"}
 };
