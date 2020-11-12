@@ -92,7 +92,7 @@ function getAssetData(client, name, type = "raw", callback) {
             callback(-1, err, undefined);
         }
         if (result !== undefined && result.first() !== null) {
-            let query = "SELECT * FROM data WHERE asset = ? ALLOW FILTERING";
+            let query = "SELECT * FROM data WHERE asset = ? ORDER BY created DESC LIMIT 50 ALLOW FILTERING";
             client.execute(query, [result.first().id], (err, result2) => {
                 if (err) {
                     console.log('error: '.concat(err));
@@ -109,7 +109,8 @@ function getAssetData(client, name, type = "raw", callback) {
                         });
                         callback(0, "", data);
                     } else {
-                        callback(0, "", result2.rows);
+                        let results = result2.rows.reverse();
+                        callback(0, "", results);
                     }
                 } else {
                     callback(-2, "no data available", undefined);
